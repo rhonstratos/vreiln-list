@@ -19,6 +19,7 @@ import {
 import { toTitleCase } from "@/lib/utils";
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { Todo } from "../Index";
 
 export default function TodoDialog({
@@ -73,7 +74,6 @@ export default function TodoDialog({
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        console.log("submitting", action);
 
         const routeAction = {
             create: "todos.store",
@@ -83,27 +83,29 @@ export default function TodoDialog({
 
         if (!action) return alert("Invalid action");
 
+        const handleSuccessTodo = (res: any) => {
+            toast(res?.props?.flash?.success ?? "Success");
+            toggle(false, null, null);
+        };
+        const handleErrorTodo = (res: any) => {
+            toast(res?.props?.flash?.error ?? "Error");
+            toggle(false, null, null);
+        };
+
+        const todoHandlers = {
+            onSuccess: handleSuccessTodo,
+            onError: handleErrorTodo,
+        };
+
         switch (action) {
             case "create":
-                post(route(routeAction[action]), {
-                    onSuccess: () => {
-                        toggle(false, null, null);
-                    },
-                });
+                post(route(routeAction[action]), todoHandlers);
                 break;
             case "edit":
-                put(route(routeAction[action], todo?.id), {
-                    onSuccess: () => {
-                        toggle(false, null, null);
-                    },
-                });
+                put(route(routeAction[action], todo?.id), todoHandlers);
                 break;
             case "delete":
-                destroy(route(routeAction[action], todo?.id), {
-                    onSuccess: () => {
-                        toggle(false, null, null);
-                    },
-                });
+                destroy(route(routeAction[action], todo?.id), todoHandlers);
                 break;
         }
     };

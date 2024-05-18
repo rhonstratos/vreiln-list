@@ -27,7 +27,11 @@ class TodoController extends Controller
     {
         return inertia('Todos/Index', [
             'resource' => self::queryIndex($user),
-            'debug' => true
+            'debug' => true,
+            'flash' => [
+                'success' => session()->get('success'),
+                'error' => session()->get('error'),
+            ],
         ]);
     }
 

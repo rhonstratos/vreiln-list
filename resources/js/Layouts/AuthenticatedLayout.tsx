@@ -1,10 +1,11 @@
-import { useState, PropsWithChildren, ReactNode } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link } from "@inertiajs/react";
+import { Toaster } from "@/Components/ui/sonner";
 import { User } from "@/types";
+import { Link } from "@inertiajs/react";
+import { PropsWithChildren, ReactNode, useState } from "react";
 
 export default function Authenticated({
     user,
@@ -180,6 +181,7 @@ export default function Authenticated({
             )}
 
             <main>{children}</main>
+            <Toaster />
         </div>
     );
 }
