@@ -11,3 +11,8 @@ export const dateFormat = (date?: string, formatString = "MMM D, YYYY") => {
 
     return moment(date).format(formatString);
 };
+
+export function toTitleCase(str: string | null | undefined) {
+    if (!str) return null;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}

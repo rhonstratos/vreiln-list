@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Todo;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTodoRequest extends FormRequest
 {
@@ -22,7 +24,9 @@ class UpdateTodoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'group' => ['nullable', 'string'],
+            'task' => ['required', 'string', 'max:255'],
+            'priority' => ['nullable', 'string', 'in:0,1,2,3'],
         ];
     }
 }

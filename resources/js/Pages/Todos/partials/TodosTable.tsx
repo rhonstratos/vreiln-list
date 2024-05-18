@@ -29,40 +29,59 @@ import { dateFormat } from "@/lib/utils";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { ListResource, Todo } from "../Index";
-import CreateTodoDialog from "./CreateTodoDialog";
+import TodoDialog from "./TodoDialog";
 
 export default function TodosTable({
     resource,
 }: {
     resource: ListResource<Todo>;
 }) {
+    const [todo, setTodo] = useState<Todo | null>(null);
     const [open, setOpen] = useState(false);
+    const [action, setAction] = useState<"create" | "edit" | null>("create");
 
-    const toggle = () => setOpen(!open);
+    const toggle = (
+        toggle: boolean,
+        actionType: "create" | "edit" | null,
+        todo?: Todo | null
+    ) => {
+        if (!!todo && actionType === "edit") {
+            setTodo(todo);
+        } else {
+            setTodo(null);
+        }
+        setAction(actionType);
+        setOpen(toggle);
+    };
 
     const priorityMapping: Record<number, { label: string; class: string }> = {
         0: {
             label: "None",
-            class: "bg-secondary hover:bg-secondary/80",
+            class: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         },
         1: {
             label: "Low",
-            class: "bg-green-300 hover:bg-green-300/80",
+            class: "bg-green-300 text-secondary-foreground hover:bg-green-300/80",
         },
         2: {
             label: "Medium",
-            class: "bg-orange-300 hover:bg-orange-300/80",
+            class: "bg-orange-300 text-secondary-foreground hover:bg-orange-300/80",
         },
         3: {
             label: "High",
-            class: "bg-destructive hover:bg-destructive/80",
+            class: "bg-destructive text-primary-foreground hover:bg-destructive/80",
         },
     };
 
     return (
         <>
             {/* Modals */}
-            <CreateTodoDialog open={open} toggle={toggle} />
+            <TodoDialog
+                todo={todo}
+                action={action}
+                open={open}
+                toggle={toggle}
+            />
 
             {/* Main */}
             <Card>
@@ -78,7 +97,7 @@ export default function TodosTable({
                             variant="default"
                             size="icon"
                             className="rounded-full"
-                            onClick={() => setOpen(true)}
+                            onClick={() => toggle(true, "create")}
                         >
                             <FaPlus></FaPlus>
                         </Button>
@@ -116,8 +135,7 @@ export default function TodosTable({
                                                 className={
                                                     priorityMapping[
                                                         todo.priority
-                                                    ].class +
-                                                    " text-secondary-foreground"
+                                                    ].class
                                                 }
                                             >
                                                 {
@@ -156,10 +174,11 @@ export default function TodosTable({
                                                     </DropdownMenuLabel>
                                                     <DropdownMenuItem
                                                         onClick={() =>
-                                                            (window.location.href =
-                                                                route(
-                                                                    "todos.edit"
-                                                                ))
+                                                            toggle(
+                                                                true,
+                                                                "edit",
+                                                                todo
+                                                            )
                                                         }
                                                     >
                                                         Edit

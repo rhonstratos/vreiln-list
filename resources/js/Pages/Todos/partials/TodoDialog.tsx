@@ -16,39 +16,76 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
+import { toTitleCase } from "@/lib/utils";
 import { useForm, usePage } from "@inertiajs/react";
+import { useEffect } from "react";
+import { Todo } from "../Index";
 
-export default function CreateTodoDialog({
+export default function TodoDialog({
+    todo,
+    action,
     open,
     toggle,
 }: {
+    todo: Todo | null;
+    action: "create" | "edit" | null;
     open: boolean;
-    toggle: () => void;
+    toggle: (
+        toggle: boolean,
+        actionType: "create" | "edit" | null,
+        todo?: Todo | null
+    ) => void;
 }) {
     const { csrf_token }: any = usePage().props;
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, put, processing, errors } = useForm<{
+        group: string;
+        task: string;
+        priority: string;
+        _token: string;
+    }>({
         group: "",
         task: "",
         priority: "",
         _token: csrf_token,
     });
 
+    // Update form data when todo changes
+    useEffect(() => {
+        if (!!todo && action === "edit") {
+            setData({
+                _token: csrf_token,
+                group: todo?.group ?? "",
+                task: todo?.task ?? "",
+                priority: todo?.priority?.toString() ?? "",
+            });
+        }
+    }, [todo, action]);
+
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route("todos.store"), {
+        const routeAction = {
+            create: "todos.store",
+            edit: "todos.update",
+        };
+        if (!action) return alert("Invalid action");
+        put(route(routeAction[action], todo?.id), {
             onSuccess: () => {
-                toggle();
+                toggle(false, null, null);
             },
         });
     };
 
+    const handleOpenChange = () => {
+        toggle(false, null);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={toggle}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogClose />
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>New Todo</DialogTitle>
+                    <DialogTitle>{toTitleCase(action)} Todo</DialogTitle>
                     <DialogDescription>
                         This action cannot be undone. This will permanently
                         delete your account and remove your data from our
@@ -69,6 +106,8 @@ export default function CreateTodoDialog({
                             name="group"
                             id="group"
                             placeholder="Chores"
+                            type="text"
+                            value={data?.group}
                             onChange={(e) => setData("group", e.target.value)}
                         />
                         <Label htmlFor="task" className="text-right">
@@ -79,6 +118,8 @@ export default function CreateTodoDialog({
                             id="task"
                             required
                             placeholder="Clean my desk"
+                            type="text"
+                            value={data?.task}
                             onChange={(e) => setData("task", e.target.value)}
                         />
                         <Label htmlFor="priority" className="text-right">
@@ -86,6 +127,7 @@ export default function CreateTodoDialog({
                         </Label>
                         <Select
                             name="priority"
+                            value={data?.priority}
                             onValueChange={(e) => setData("priority", e)}
                         >
                             <SelectTrigger className="w-full">
@@ -109,7 +151,9 @@ export default function CreateTodoDialog({
                             form="create-todo-form"
                             disabled={processing}
                         >
-                            Create
+                            {toTitleCase(
+                                action === "create" ? "Submit" : "Save"
+                            )}
                         </Button>
                     </div>
                 </section>

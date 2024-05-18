@@ -50,20 +50,23 @@ class TodoController extends Controller
             return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
     }
-    public function show(Todo $todo)
-    {
-        //
-    }
-    public function edit(Todo $todo)
-    {
-        //
-    }
     public function update(UpdateTodoRequest $request, Todo $todo)
     {
-        //
+        try {
+            $validated = $request->validated();
+
+            $todo->update(
+                array_merge($validated, ['priority' => ($validated['priority'] ?? 0)])
+            );
+
+            return to_route('todos.index');
+
+        } catch (Exception $e) {
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        }
     }
     public function destroy(Todo $todo)
     {
-        //
+        return abort(501, 'Not implemented');
     }
 }
