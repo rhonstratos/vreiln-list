@@ -38,14 +38,16 @@ export default function TodosTable({
 }) {
     const [todo, setTodo] = useState<Todo | null>(null);
     const [open, setOpen] = useState(false);
-    const [action, setAction] = useState<"create" | "edit" | null>("create");
+    const [action, setAction] = useState<"create" | "edit" | "delete" | null>(
+        "create"
+    );
 
-    const toggle = (
+    const toggleDialog = (
         toggle: boolean,
-        actionType: "create" | "edit" | null,
+        actionType: "create" | "edit" | "delete" | null,
         todo?: Todo | null
     ) => {
-        if (!!todo && actionType === "edit") {
+        if (!!todo && (actionType === "edit" || actionType === "delete")) {
             setTodo(todo);
         } else {
             setTodo(null);
@@ -80,7 +82,7 @@ export default function TodosTable({
                 todo={todo}
                 action={action}
                 open={open}
-                toggle={toggle}
+                toggle={toggleDialog}
             />
 
             {/* Main */}
@@ -97,7 +99,7 @@ export default function TodosTable({
                             variant="default"
                             size="icon"
                             className="rounded-full"
-                            onClick={() => toggle(true, "create")}
+                            onClick={() => toggleDialog(true, "create")}
                         >
                             <FaPlus></FaPlus>
                         </Button>
@@ -174,7 +176,7 @@ export default function TodosTable({
                                                     </DropdownMenuLabel>
                                                     <DropdownMenuItem
                                                         onClick={() =>
-                                                            toggle(
+                                                            toggleDialog(
                                                                 true,
                                                                 "edit",
                                                                 todo
@@ -185,10 +187,11 @@ export default function TodosTable({
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() =>
-                                                            (window.location.href =
-                                                                route(
-                                                                    "todos.delete"
-                                                                ))
+                                                            toggleDialog(
+                                                                true,
+                                                                "delete",
+                                                                todo
+                                                            )
                                                         }
                                                     >
                                                         Delete

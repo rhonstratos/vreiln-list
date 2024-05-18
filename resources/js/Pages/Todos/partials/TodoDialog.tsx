@@ -28,17 +28,26 @@ export default function TodoDialog({
     toggle,
 }: {
     todo: Todo | null;
-    action: "create" | "edit" | null;
+    action: "create" | "edit" | "delete" | null;
     open: boolean;
     toggle: (
         toggle: boolean,
-        actionType: "create" | "edit" | null,
+        actionType: "create" | "edit" | "delete" | null,
         todo?: Todo | null
     ) => void;
 }) {
+    if (!action) return;
     const { csrf_token }: any = usePage().props;
 
-    const { data, setData, post, put, processing, errors } = useForm<{
+    const {
+        data,
+        setData,
+        post,
+        put,
+        delete: destroy,
+        processing,
+        errors,
+    } = useForm<{
         group: string;
         task: string;
         priority: string;
@@ -52,7 +61,7 @@ export default function TodoDialog({
 
     // Update form data when todo changes
     useEffect(() => {
-        if (!!todo && action === "edit") {
+        if (!!todo && (action === "edit" || action === "delete")) {
             setData({
                 _token: csrf_token,
                 group: todo?.group ?? "",
@@ -64,21 +73,46 @@ export default function TodoDialog({
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+        console.log("submitting", action);
+
         const routeAction = {
             create: "todos.store",
             edit: "todos.update",
+            delete: "todos.destroy",
         };
+
         if (!action) return alert("Invalid action");
-        put(route(routeAction[action], todo?.id), {
-            onSuccess: () => {
-                toggle(false, null, null);
-            },
-        });
+
+        switch (action) {
+            case "create":
+                post(route(routeAction[action]), {
+                    onSuccess: () => {
+                        toggle(false, null, null);
+                    },
+                });
+                break;
+            case "edit":
+                put(route(routeAction[action], todo?.id), {
+                    onSuccess: () => {
+                        toggle(false, null, null);
+                    },
+                });
+                break;
+            case "delete":
+                destroy(route(routeAction[action], todo?.id), {
+                    onSuccess: () => {
+                        toggle(false, null, null);
+                    },
+                });
+                break;
+        }
     };
 
     const handleOpenChange = () => {
         toggle(false, null);
     };
+
+    const formIsDisabled = action === "delete";
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -109,6 +143,7 @@ export default function TodoDialog({
                             type="text"
                             value={data?.group}
                             onChange={(e) => setData("group", e.target.value)}
+                            disabled={formIsDisabled}
                         />
                         <Label htmlFor="task" className="text-right">
                             Task
@@ -121,6 +156,7 @@ export default function TodoDialog({
                             type="text"
                             value={data?.task}
                             onChange={(e) => setData("task", e.target.value)}
+                            disabled={formIsDisabled}
                         />
                         <Label htmlFor="priority" className="text-right">
                             Priority
@@ -129,6 +165,7 @@ export default function TodoDialog({
                             name="priority"
                             value={data?.priority}
                             onValueChange={(e) => setData("priority", e)}
+                            disabled={formIsDisabled}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue
@@ -147,12 +184,14 @@ export default function TodoDialog({
                     <div className="flex justify-end mt-6">
                         <Button
                             type="submit"
-                            variant="default"
-                            form="create-todo-form"
+                            variant={
+                                action === "delete" ? "destructive" : "default"
+                            }
                             disabled={processing}
+                            form="create-todo-form"
                         >
                             {toTitleCase(
-                                action === "create" ? "Submit" : "Save"
+                                action === "delete" ? "delete" : "save"
                             )}
                         </Button>
                     </div>

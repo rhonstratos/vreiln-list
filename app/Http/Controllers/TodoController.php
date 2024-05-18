@@ -44,7 +44,8 @@ class TodoController extends Controller
                 array_merge($validated, ['priority' => ($validated['priority'] ?? 0)])
             );
 
-            return to_route('todos.index');
+            return to_route('todos.index')
+                ->with('success', 'Todo created successfully');
 
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => $e->getMessage()]);
@@ -59,7 +60,8 @@ class TodoController extends Controller
                 array_merge($validated, ['priority' => ($validated['priority'] ?? 0)])
             );
 
-            return to_route('todos.index');
+            return to_route('todos.index')
+                ->with('success', 'Todo updated successfully');
 
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => $e->getMessage()]);
@@ -67,6 +69,14 @@ class TodoController extends Controller
     }
     public function destroy(Todo $todo)
     {
-        return abort(501, 'Not implemented');
+        try {
+            $todo->delete();
+
+            return to_route('todos.index')
+                ->with('success', 'Todo deleted successfully');
+
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }
