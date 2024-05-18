@@ -22,7 +22,9 @@ class StoreTodoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'group' => ['nullable', 'string'],
+            'task' => ['required', 'string', 'max:255'],
+            'priority' => ['nullable', 'string', 'in:0,1,2,3'],
         ];
     }
 }

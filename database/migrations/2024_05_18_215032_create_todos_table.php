@@ -14,10 +14,10 @@ return new class extends Migration {
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class, 'user_id')->constrained('users');
-            $table->string('group');
+            $table->string('group')->nullable();
             $table->string('task');
-            $table->integer('priority');
-            $table->boolean('is_done');
+            $table->integer('priority')->default(0);
+            $table->boolean('is_done')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });
